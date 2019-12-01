@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -17,14 +20,66 @@ var (
 	reportTo   = report.Flag("to", "From timestamp").Required().String()
 )
 
+type Task struct {
+	ID   uint
+	Name string
+	Logs []Log
+}
+
+type Log struct {
+	ID       uint
+	TimeFrom time.Time
+	TimeTo   *time.Time
+	TaskId   uint
+}
+
+func beginTaskHandler(taskName *string) {
+	var now = time.Now()
+	var db = getDatabase()
+
+	// are there open logs?
+	var openLogs []Log
+	db.Where("time_to is NULL").Find(&openLogs)
+	for _, l := range openLogs {
+		var to time.Time = now
+		l.TimeTo = &to
+		db.Save(&l)
+		fmt.Printf("ended log for task %d\n", l.TaskId)
+	}
+
+	var task Task
+	db.Where(Task{Name: *taskName}).FirstOrCreate(&task)
+	fmt.Printf("begin task %s id = %d\n", *taskName, task.ID)
+	log := Log{TaskId: task.ID, TimeFrom: now}
+	db.Create(&log)
+	db.Close()
+}
+
+func getDatabase() *gorm.DB {
+	db, err := gorm.Open("sqlite3", "ttrack.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	db.AutoMigrate(&Log{})
+	db.AutoMigrate(&Task{})
+	return db
+}
+
 func main() {
+
 	switch kingpin.Parse() {
 	case begin.FullCommand():
-		fmt.Printf("begin task %s\n", *beginTask)
+		beginTaskHandler(beginTask)
 		break
 	case end.FullCommand():
 		fmt.Printf("end\n")
 	case report.FullCommand():
-		fmt.Printf("Report %s-%s\n", *reportFrom, *reportTo)
+		layout := "2.1.2006"
+		fromTime, err := time.Parse(layout, *reportFrom)
+		if err != nil {
+			fmt.Println(err)
+		}
+		toTime, _ := time.Parse(layout, *reportTo)
+		fmt.Printf("Report %s-%s\n", fromTime, toTime)
 	}
 }
