@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"time"
-	"text/tabwriter"
-	"os"
-	"strings"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/olekukonko/tablewriter"
+	"github.com/snabb/isoweek"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"os"
+	"time"
 )
 
 var (
@@ -18,9 +18,10 @@ var (
 	end     = kingpin.Command("end", "Ends a new task.")
 	endTime = end.Arg("end", "End timestamp '01.02.2019 14:33' or 'now' for current time").String()
 
-	report     = kingpin.Command("report", "Prints a report")
-	reportFrom = report.Arg("from", "From timestamp").Required().String()
-	reportTo   = report.Arg("to", "From timestamp").Required().String()
+	report      = kingpin.Command("report", "Prints a report")
+	reportFrom  = report.Arg("from", "From timestamp").Required().String()
+	reportTo    = report.Arg("to", "From timestamp").Required().String()
+	reportDaily = report.Flag("daily", "Group times daily").Bool()
 )
 
 type Task struct {
@@ -89,7 +90,7 @@ func getDatabase() *gorm.DB {
 	return db
 }
 
-func reportHandler(from *string, to *string) {
+func reportHandler(from *string, to *string, daily bool) {
 	layout := "02.01.2006"
 	fromTime, err := time.Parse(layout, *from)
 	if err != nil {
@@ -104,22 +105,51 @@ func reportHandler(from *string, to *string) {
 	var db = getDatabase()
 	defer db.Close()
 	fmt.Printf("Report from:%s to:%s\n", *from, *to)
-	// select task_id, sum((julianday(time_to) - julianday(time_from)) * 86400.0) from logs group by task_id
 	type Result struct {
 		TaskId       uint
-		Name string
+		Day          int
+		Name         string
 		TotalSeconds float64
 	}
-	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
-	fmt.Fprintf(w, "Task\tTime [h]\n")
-	fmt.Fprintln(w, strings.Repeat("-", 30))
+	table := tablewriter.NewWriter(os.Stdout)
 	var results []Result
-	db.Table("logs").Select("logs.task_id, tasks.name, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").Joins("join tasks on tasks.id = logs.task_id").Where("time_from > ? and time_to < ?", fromTime, toTime).Group("logs.task_id").Find(&results)
-	for _, r := range results {
-		fmt.Fprintf(w, "%s\t%f\n", r.Name, r.TotalSeconds/60/60)
+	if daily {
+		table.SetHeader([]string{"Day", "Task", "Time [h]"})
+		db.Table("logs").
+			Select("cast(round(julianday(logs.time_from)) as int) as day, logs.task_id, tasks.name, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").
+			Joins("join tasks on tasks.id = logs.task_id").
+			Where("time_from > ? and time_to < ?", fromTime, toTime).
+			Group("day, logs.task_id").
+			Find(&results)
+		last_day := 0
+		for _, r := range results {
+			if last_day != r.Day {
+				y, month, day := isoweek.JulianToDate(r.Day)
+				date := time.Date(y, month, day, 0, 0, 0, 0, time.Local)
+
+				row := []string{date.Format("02.01.2006"), r.Name, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+				table.Append(row)
+				last_day = r.Day
+			} else {
+				row := []string{" ", r.Name, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+				table.Append(row)
+			}
+		}
+		table.Render()
+	} else {
+		table.SetHeader([]string{"Task", "Time [h]"})
+		db.Table("logs").
+			Select("logs.task_id, tasks.name, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").
+			Joins("join tasks on tasks.id = logs.task_id").
+			Where("time_from > ? and time_to < ?", fromTime, toTime).
+			Group("logs.task_id").
+			Find(&results)
+		for _, r := range results {
+			row := []string{r.Name, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+			table.Append(row)
+		}
+		table.Render()
 	}
-	w.Flush()
 }
 
 func main() {
@@ -130,6 +160,6 @@ func main() {
 	case end.FullCommand():
 		endOpenTasksHandler(endTime)
 	case report.FullCommand():
-		reportHandler(reportFrom, reportTo)
+		reportHandler(reportFrom, reportTo, *reportDaily)
 	}
 }
