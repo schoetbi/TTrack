@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"time"
-
+	"text/tabwriter"
+	"os"
+	"strings"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -17,8 +19,8 @@ var (
 	endTime = end.Arg("end", "End timestamp '01.02.2019 14:33' or 'now' for current time").String()
 
 	report     = kingpin.Command("report", "Prints a report")
-	reportFrom = report.Flag("from", "From timestamp").Required().String()
-	reportTo   = report.Flag("to", "From timestamp").Required().String()
+	reportFrom = report.Arg("from", "From timestamp").Required().String()
+	reportTo   = report.Arg("to", "From timestamp").Required().String()
 )
 
 type Task struct {
@@ -87,6 +89,39 @@ func getDatabase() *gorm.DB {
 	return db
 }
 
+func reportHandler(from *string, to *string) {
+	layout := "02.01.2006"
+	fromTime, err := time.Parse(layout, *from)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	toTime, err := time.Parse(layout, *to)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	var db = getDatabase()
+	defer db.Close()
+	fmt.Printf("Report from:%s to:%s\n", *from, *to)
+	// select task_id, sum((julianday(time_to) - julianday(time_from)) * 86400.0) from logs group by task_id
+	type Result struct {
+		TaskId       uint
+		Name string
+		TotalSeconds float64
+	}
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
+	fmt.Fprintf(w, "Task\tTime [h]\n")
+	fmt.Fprintln(w, strings.Repeat("-", 30))
+	var results []Result
+	db.Table("logs").Select("logs.task_id, tasks.name, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").Joins("join tasks on tasks.id = logs.task_id").Where("time_from > ? and time_to < ?", fromTime, toTime).Group("logs.task_id").Find(&results)
+	for _, r := range results {
+		fmt.Fprintf(w, "%s\t%f\n", r.Name, r.TotalSeconds/60/60)
+	}
+	w.Flush()
+}
+
 func main() {
 	switch kingpin.Parse() {
 	case begin.FullCommand():
@@ -95,12 +130,6 @@ func main() {
 	case end.FullCommand():
 		endOpenTasksHandler(endTime)
 	case report.FullCommand():
-		layout := "2.1.2006"
-		fromTime, err := time.Parse(layout, *reportFrom)
-		if err != nil {
-			fmt.Println(err)
-		}
-		toTime, _ := time.Parse(layout, *reportTo)
-		fmt.Printf("Report %s-%s\n", fromTime, toTime)
+		reportHandler(reportFrom, reportTo)
 	}
 }
