@@ -11,17 +11,39 @@ import (
 )
 
 func ReportHandler(from *string, to *string, daily bool, byProject bool) {
-	layout := "02.01.2006"
-	fromTime, err := time.Parse(layout, *from)
-	if err != nil {
-		fmt.Println(err)
-		return
+	dateFormat := "02.01.2006"
+	var fromTime time.Time
+	var toTime time.Time
+	if *from != "" {
+		t, err := time.Parse(dateFormat, *from)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fromTime = t
 	}
-	toTime, err := time.Parse(layout, *to)
-	if err != nil {
-		fmt.Println(err)
-		return
+	if *to != "" {
+		t, err := time.Parse(dateFormat, *to)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		toTime = t
 	}
+
+	var whereClause string
+	sqliteDateFormat := "2006-01-02 15:04"
+	if *from == "" && *to != "" {
+		whereClause = "true"
+	} else if *from != "" && *to == "" {
+		whereClause = fmt.Sprintf("time_from >= '%s'", fromTime.Format(sqliteDateFormat))
+	} else if *from == "" && *to != "" {
+		whereClause = fmt.Sprintf("time_to <= '%s'", toTime.Format(sqliteDateFormat))
+	} else if *from != "" && *to != "" {
+		whereClause = fmt.Sprintf("time_from >= '%s' and time_to <= '%s'", fromTime.Format(sqliteDateFormat), toTime.Format(sqliteDateFormat))
+	}
+
+	fmt.Println(whereClause)
 	var db = GetDatabase()
 	defer db.Close()
 	fmt.Printf("Report from:%s to:%s\n", *from, *to)
@@ -40,7 +62,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 			db.Table("logs").
 				Select("cast(round(julianday(logs.time_from)) as int) as day, tasks.project as project, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").
 				Joins("join tasks on tasks.id = logs.task_id").
-				Where("time_from > ? and time_to < ?", fromTime, toTime).
+				Where(whereClause).
 				Group("day, project").
 				Find(&results)
 			last_day := 0
@@ -63,7 +85,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 			db.Table("logs").
 				Select("tasks.project as project, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").
 				Joins("join tasks on tasks.id = logs.task_id").
-				Where("time_from > ? and time_to < ? and tasks.project is not NULL", fromTime, toTime).
+				Where(whereClause).
 				Group("project").
 				Find(&results)
 			for _, r := range results {
@@ -78,7 +100,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 			db.Table("logs").
 				Select("cast(round(julianday(logs.time_from)) as int) as day, logs.task_id, tasks.name, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").
 				Joins("join tasks on tasks.id = logs.task_id").
-				Where("time_from > ? and time_to < ?", fromTime, toTime).
+				Where(whereClause).
 				Group("day, logs.task_id").
 				Find(&results)
 			last_day := 0
@@ -101,7 +123,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 			db.Table("logs").
 				Select("logs.task_id, tasks.name, sum((julianday(logs.time_to) - julianday(logs.time_from)) * 86400.0) as total_seconds").
 				Joins("join tasks on tasks.id = logs.task_id").
-				Where("time_from > ? and time_to < ?", fromTime, toTime).
+				Where(whereClause).
 				Group("logs.task_id").
 				Find(&results)
 			for _, r := range results {

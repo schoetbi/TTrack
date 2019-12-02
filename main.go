@@ -12,8 +12,8 @@ var (
 	endTime = end.Arg("end", "End timestamp '01.02.2019 14:33' or 'now' for current time").String()
 
 	report          = kingpin.Command("report", "Prints a report")
-	reportFrom      = report.Arg("from", "From timestamp").Required().String()
-	reportTo        = report.Arg("to", "From timestamp").Required().String()
+	reportFrom      = report.Arg("from", "From timestamp").String()
+	reportTo        = report.Arg("to", "From timestamp").String()
 	reportDaily     = report.Flag("daily", "Group times daily").Bool()
 	reportByProject = report.Flag("project", "Group by project").Bool()
 )
