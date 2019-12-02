@@ -13,7 +13,8 @@ var (
 	begin     = kingpin.Command("begin", "Starts a task.")
 	beginTask = begin.Arg("task", "Taskname").Required().String()
 
-	end = kingpin.Command("end", "Ends a new task.")
+	end     = kingpin.Command("end", "Ends a new task.")
+	endTime = end.Arg("end", "End timestamp '01.02.2019 14:33' or 'now' for current time").String()
 
 	report     = kingpin.Command("report", "Prints a report")
 	reportFrom = report.Flag("from", "From timestamp").Required().String()
@@ -37,15 +38,7 @@ func beginTaskHandler(taskName *string) {
 	var now = time.Now()
 	var db = getDatabase()
 
-	// are there open logs?
-	var openLogs []Log
-	db.Where("time_to is NULL").Find(&openLogs)
-	for _, l := range openLogs {
-		var to time.Time = now
-		l.TimeTo = &to
-		db.Save(&l)
-		fmt.Printf("ended log for task %d\n", l.TaskId)
-	}
+	endOpenTasks(db, now)
 
 	var task Task
 	db.Where(Task{Name: *taskName}).FirstOrCreate(&task)
@@ -53,6 +46,35 @@ func beginTaskHandler(taskName *string) {
 	log := Log{TaskId: task.ID, TimeFrom: now}
 	db.Create(&log)
 	db.Close()
+}
+
+func endOpenTasks(db *gorm.DB, t time.Time) {
+	var openLogs []Log
+	db.Where("time_to is NULL").Find(&openLogs)
+	for _, l := range openLogs {
+		var to time.Time = t
+		l.TimeTo = &to
+		db.Save(&l)
+		fmt.Printf("ended log for task %d\n", l.TaskId)
+	}
+}
+
+func endOpenTasksHandler(endTime *string) {
+	var toTime time.Time
+	if *endTime == "" || *endTime == "now" {
+		toTime = time.Now()
+	} else {
+		var layout = "2.1.2006"
+		parsedTime, err := time.Parse(layout, *endTime)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		toTime = parsedTime
+	}
+	var db = getDatabase()
+	endOpenTasks(db, toTime)
+	fmt.Printf("Finished all open tasks\n")
 }
 
 func getDatabase() *gorm.DB {
@@ -66,13 +88,12 @@ func getDatabase() *gorm.DB {
 }
 
 func main() {
-
 	switch kingpin.Parse() {
 	case begin.FullCommand():
 		beginTaskHandler(beginTask)
 		break
 	case end.FullCommand():
-		fmt.Printf("end\n")
+		endOpenTasksHandler(endTime)
 	case report.FullCommand():
 		layout := "2.1.2006"
 		fromTime, err := time.Parse(layout, *reportFrom)
