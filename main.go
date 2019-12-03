@@ -16,6 +16,10 @@ var (
 	reportTo        = report.Arg("to", "From timestamp").String()
 	reportDaily     = report.Flag("daily", "Group times daily").Bool()
 	reportByProject = report.Flag("project", "Group by project").Bool()
+
+	list          = kingpin.Command("list", "Prints a report")
+	listFrom      = list.Arg("from", "From timestamp").String()
+	listTo        = list.Arg("to", "From timestamp").String()
 )
 
 func main() {
@@ -27,5 +31,7 @@ func main() {
 		EndOpenTasksHandler(endTime)
 	case report.FullCommand():
 		ReportHandler(reportFrom, reportTo, *reportDaily, *reportByProject)
+	case list.FullCommand():
+		ListHandler(listFrom, listTo)
 	}
 }
