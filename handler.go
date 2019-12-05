@@ -182,7 +182,7 @@ func BeginTaskHandler(taskName *string) {
 		db.Where(Task{Name: *taskName}).FirstOrCreate(&task)
 	}
 
-	fmt.Printf("begin task %s id = %d\n", *taskName, task.ID)
+	fmt.Printf("begin task %s\n", *taskName)
 	log := Log{TaskId: task.ID, TimeFrom: now}
 	db.Create(&log)
 	db.Close()
