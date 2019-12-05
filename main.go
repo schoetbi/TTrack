@@ -8,7 +8,7 @@ var (
 	begin     = kingpin.Command("begin", "Starts a task.")
 	beginTask = begin.Arg("task", "Taskname").Required().String()
 
-	end     = kingpin.Command("end", "Ends a new task.")
+	end     = kingpin.Command("end", "Ends tasks.")
 	endTime = end.Arg("end", "End timestamp '01.02.2019 14:33' or 'now' for current time").String()
 
 	report          = kingpin.Command("report", "Prints a report")

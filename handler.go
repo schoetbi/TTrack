@@ -193,7 +193,7 @@ func EndOpenTasksHandler(endTime *string) {
 	if *endTime == "" || *endTime == "now" {
 		toTime = time.Now()
 	} else {
-		var layout = "2.1.2006"
+		var layout = "2.1.2006 15:04"
 		parsedTime, err := time.Parse(layout, *endTime)
 		if err != nil {
 			fmt.Println(err)
