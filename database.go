@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"time"
+	"path"
+	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
@@ -34,7 +37,16 @@ func EndOpenTasks(db *gorm.DB, t time.Time) {
 }
 
 func GetDatabase() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "ttrack.db")
+	homeDir, errHomeDir := homedir.Dir()
+	if errHomeDir != nil{
+		panic("Unable to get home directory")
+	}
+	
+	ttrackPath :=path.Join(homeDir, "ttrack")
+	os.MkdirAll(ttrackPath, os.ModePerm)
+	fullPath := path.Join(ttrackPath, "ttrack.db")
+	fmt.Printf("Using database at %s\n", fullPath)
+	db, err := gorm.Open("sqlite3", fullPath)
 	if err != nil {
 		panic("failed to connect database")
 	}
