@@ -38,11 +38,11 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 				if last_day != r.Day {
 					y, month, day := isoweek.JulianToDate(r.Day)
 					date := time.Date(y, month, day, 0, 0, 0, 0, time.Local)
-					row := []string{date.Format("02.01.2006"), r.Project, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+					row := []string{date.Format("02.01.2006"), r.Project, formatTime(r.TotalSeconds)}
 					table.Append(row)
 					last_day = r.Day
 				} else {
-					row := []string{" ", r.Project, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+					row := []string{" ", r.Project, formatTime(r.TotalSeconds)}
 					table.Append(row)
 				}
 			}
@@ -56,7 +56,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 				Group("project").
 				Find(&results)
 			for _, r := range results {
-				row := []string{r.Project, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+				row := []string{r.Project, formatTime(r.TotalSeconds)}
 				table.Append(row)
 			}
 			table.Render()
@@ -80,7 +80,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 					table.Append(row)
 					last_day = r.Day
 				} else {
-					row := []string{" ", r.Name, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+					row := []string{" ", r.Name, formatTime(r.TotalSeconds)}
 					table.Append(row)
 				}
 			}
@@ -94,7 +94,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 				Group("logs.task_id").
 				Find(&results)
 			for _, r := range results {
-				row := []string{r.Name, fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+				row := []string{r.Name, formatTime(r.TotalSeconds)}
 				table.Append(row)
 			}
 			table.Render()
@@ -162,12 +162,15 @@ func ListHandler(from *string, to *string) {
 		Find(&results)
 	dateTimeFormat := "02.01.2006 15:04:05"
 	for _, r := range results {
-		row := []string{r.Name, r.TimeFrom.Format(dateTimeFormat), r.TimeTo.Format(dateTimeFormat), fmt.Sprintf("%f", r.TotalSeconds/60/60)}
+		row := []string{r.Name, r.TimeFrom.Format(dateTimeFormat), r.TimeTo.Format(dateTimeFormat), formatTime(r.TotalSeconds)}
 		table.Append(row)
 	}
 	table.Render()			
 }
 
+func formatTime(timeInSeconds float64) string{
+	return fmt.Sprintf("%f (%d min)", timeInSeconds/60/60, int(timeInSeconds/60))
+}
 
 func BeginTaskHandler(taskName *string) {
 	var now = time.Now()
