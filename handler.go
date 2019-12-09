@@ -103,11 +103,10 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 }
 
 func getWhereClause(from *string, to *string) string {
-	dateFormat := "02.01.2006"
 	var fromTime time.Time
 	var toTime time.Time
 	if *from != "" {
-		t, err := time.Parse(dateFormat, *from)
+		t, err := ParseDateTime(*from)
 		if err != nil {
 			fmt.Println(err)
 			return ""
@@ -115,7 +114,7 @@ func getWhereClause(from *string, to *string) string {
 		fromTime = t
 	}
 	if *to != "" {
-		t, err := time.Parse(dateFormat, *to)
+		t, err := ParseDateTime(*to)
 		if err != nil {
 			fmt.Println(err)
 			return ""

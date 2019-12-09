@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"time"
-	"path"
 	"os"
+	"path"
+	"time"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/mitchellh/go-homedir"
 )
 
 type Task struct {
@@ -40,11 +40,11 @@ func EndOpenTasks(db *gorm.DB, t time.Time) {
 
 func GetDatabase() *gorm.DB {
 	homeDir, errHomeDir := homedir.Dir()
-	if errHomeDir != nil{
+	if errHomeDir != nil {
 		panic("Unable to get home directory")
 	}
-	
-	ttrackPath :=path.Join(homeDir, "ttrack")
+
+	ttrackPath := path.Join(homeDir, "ttrack")
 	os.MkdirAll(ttrackPath, os.ModePerm)
 	fullPath := path.Join(ttrackPath, "ttrack.db")
 	fmt.Printf("Using database at %s\n", fullPath)

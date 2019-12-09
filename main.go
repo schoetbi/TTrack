@@ -17,9 +17,9 @@ var (
 	reportDaily     = report.Flag("daily", "Group times daily").Bool()
 	reportByProject = report.Flag("project", "Group by project").Bool()
 
-	list          = kingpin.Command("list", "Prints a report")
-	listFrom      = list.Arg("from", "From timestamp").String()
-	listTo        = list.Arg("to", "From timestamp").String()
+	list     = kingpin.Command("list", "Prints a report")
+	listFrom = list.Arg("from", "From timestamp").String()
+	listTo   = list.Arg("to", "From timestamp").String()
 )
 
 func main() {
