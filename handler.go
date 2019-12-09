@@ -103,12 +103,34 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 }
 
 func getWhereClause(from *string, to *string) string {
+	sqliteDateFormat := "2006-01-02 15:04:05"
 	var fromTime time.Time
 	var toTime time.Time
-	if *from == "today"{
+	//today 
+	if strings.HasPrefix(*from, "t") { 
+		// today
 		now := time.Now()
 		fromTime = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	} else if *from != "" {
+	} else if strings.HasPrefix(*from, "y") { 
+		// yesterday
+		yesterday := time.Now().AddDate(0, 0, -1)
+		fromTime = time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 0, 0, 0, 0, yesterday.Location())
+	} else if strings.HasPrefix(*from, "m") { 
+		// current month
+		now := time.Now()
+		currentYear, currentMonth, _ := now.Date()
+    	fromTime = time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, now.Location())
+	}  else if strings.HasPrefix(*from, "pm") { 
+		// previous month
+		now := time.Now()
+		lastMonth := now.AddDate(0,-1,0)
+		lastMonthYear, lastMonthMonth, _ := lastMonth.Date()
+		fromTime = time.Date(lastMonthYear, lastMonthMonth, 1, 0, 0, 0, 0, lastMonth.Location())
+		
+		currentYear, currentMonth, _ := now.Date()
+    	toTime = time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, now.Location())
+		return fmt.Sprintf("time_from >= '%s' and time_to <= '%s'", fromTime.Format(sqliteDateFormat), toTime.Format(sqliteDateFormat))
+	}else if *from != "" {
 		t, err := ParseDateTime(*from)
 		if err != nil {
 			fmt.Println(err)
@@ -125,8 +147,7 @@ func getWhereClause(from *string, to *string) string {
 		toTime = t
 	}
 
-	var whereClause string
-	sqliteDateFormat := "2006-01-02 15:04:05"
+	var whereClause string	
 	if *from == "" && *to != "" {
 		whereClause = "true"
 	} else if *from != "" && *to == "" {
@@ -163,15 +184,23 @@ func ListHandler(from *string, to *string) {
 		Order("logs.time_from").
 		Find(&results)
 	dateTimeFormat := "02.01.2006 15:04:05"
+	zeroTime := time.Time{}
 	for _, r := range results {
-		row := []string{r.Name, r.TimeFrom.Format(dateTimeFormat), r.TimeTo.Format(dateTimeFormat), formatTime(r.TotalSeconds)}
+		var row []string
+		if r.TimeTo == zeroTime{
+			tempDiff := time.Now().Sub(r.TimeFrom)
+			row = []string{r.Name, r.TimeFrom.Format(dateTimeFormat), "", formatTime(tempDiff.Seconds())}
+		} else{
+			row = []string{r.Name, r.TimeFrom.Format(dateTimeFormat), r.TimeTo.Format(dateTimeFormat), formatTime(r.TotalSeconds)}
+		}		
+		
 		table.Append(row)
 	}
 	table.Render()			
 }
 
 func formatTime(timeInSeconds float64) string{
-	return fmt.Sprintf("%f (%d min)", timeInSeconds/60/60, int(timeInSeconds/60))
+	return fmt.Sprintf("%f (%.1f min)", timeInSeconds/60/60, timeInSeconds/60.0)
 }
 
 func BeginTaskHandler(taskName *string) {
