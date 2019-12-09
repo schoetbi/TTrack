@@ -105,7 +105,10 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 func getWhereClause(from *string, to *string) string {
 	var fromTime time.Time
 	var toTime time.Time
-	if *from != "" {
+	if *from == "today"{
+		now := time.Now()
+		fromTime = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	} else if *from != "" {
 		t, err := ParseDateTime(*from)
 		if err != nil {
 			fmt.Println(err)
