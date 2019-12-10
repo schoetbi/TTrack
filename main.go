@@ -5,8 +5,9 @@ import (
 )
 
 var (
-	begin     = kingpin.Command("begin", "Starts a task.")
-	beginTask = begin.Arg("task", "Taskname").Required().String()
+	begin      = kingpin.Command("begin", "Starts a task.")
+	beginTask  = begin.Arg("task", "Taskname").Required().String()
+	beginStart = begin.Arg("start", "Task starting time").String()
 
 	end     = kingpin.Command("end", "Ends tasks.")
 	endTime = end.Arg("end", "End timestamp '01.02.2019 14:33' or 'now' for current time").String()
@@ -25,7 +26,7 @@ var (
 func main() {
 	switch kingpin.Parse() {
 	case begin.FullCommand():
-		BeginTaskHandler(beginTask)
+		BeginTaskHandler(beginTask, beginStart)
 		break
 	case end.FullCommand():
 		EndOpenTasksHandler(endTime)

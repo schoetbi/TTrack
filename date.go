@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"regexp"
 	"time"
 )
@@ -18,6 +17,11 @@ func ParseDateTime(input string) (time.Time, error) {
 	buildPatterns := func() []Pattern {
 		if len(patterns) == 0 {
 			regexes := map[string]string{
+				"^\\d{1,2}:\\d{1,2}$":                     "15:4",
+				"^\\d{1,2}:\\d{1,2}:\\d{1,2}$":            "15:4:5",
+				"^\\d{1,2}:\\d{1,2}:\\d{1,2} [aApP][mM]$": "3:4:5 PM",
+				"^\\d{1,2}:\\d{1,2} [aApP][mM]$":          "3:4 PM",
+
 				"^\\d{1,2}/\\d{1,2}/\\d{4}$":                                       "1/2/2006",
 				"^\\d{1,2}/\\d{1,2}/\\d{2}$":                                       "1/2/06",
 				"^\\d{1,2}/\\d{1,2}/\\d{2} \\d{1,2}:\\d{1,2}:\\d{1,2}$":            "1/2/06 15:4:5",
@@ -69,7 +73,6 @@ func ParseDateTime(input string) (time.Time, error) {
 			format = regex.pattern
 		}
 	}
-	fmt.Printf("Input %s -> Pattern: %s\n", input, format)
 	if format == "" {
 		panic("No pattern")
 	}
