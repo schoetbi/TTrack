@@ -38,11 +38,11 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 				if last_day != r.Day {
 					y, month, day := isoweek.JulianToDate(r.Day)
 					date := time.Date(y, month, day, 0, 0, 0, 0, time.Local)
-					row := []string{date.Format("02.01.2006"), r.Project, formatTime(r.TotalSeconds)}
+					row := []string{date.Format("02.01.2006"), r.Project, FormatTime(r.TotalSeconds)}
 					table.Append(row)
 					last_day = r.Day
 				} else {
-					row := []string{" ", r.Project, formatTime(r.TotalSeconds)}
+					row := []string{" ", r.Project, FormatTime(r.TotalSeconds)}
 					table.Append(row)
 				}
 			}
@@ -56,7 +56,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 				Group("project").
 				Find(&results)
 			for _, r := range results {
-				row := []string{r.Project, formatTime(r.TotalSeconds)}
+				row := []string{r.Project, FormatTime(r.TotalSeconds)}
 				table.Append(row)
 			}
 			table.Render()
@@ -80,7 +80,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 					table.Append(row)
 					last_day = r.Day
 				} else {
-					row := []string{" ", r.Name, formatTime(r.TotalSeconds)}
+					row := []string{" ", r.Name, FormatTime(r.TotalSeconds)}
 					table.Append(row)
 				}
 			}
@@ -94,7 +94,7 @@ func ReportHandler(from *string, to *string, daily bool, byProject bool) {
 				Group("logs.task_id").
 				Find(&results)
 			for _, r := range results {
-				row := []string{r.Name, formatTime(r.TotalSeconds)}
+				row := []string{r.Name, FormatTime(r.TotalSeconds)}
 				table.Append(row)
 			}
 			table.Render()
@@ -189,9 +189,9 @@ func ListHandler(from *string, to *string) {
 		var row []string
 		if r.TimeTo == zeroTime {
 			tempDiff := time.Now().Sub(r.TimeFrom)
-			row = []string{r.Name, r.TimeFrom.Format(dateTimeFormat), "", formatTime(tempDiff.Seconds())}
+			row = []string{r.Name, r.TimeFrom.Format(dateTimeFormat), "", FormatTime(tempDiff.Seconds())}
 		} else {
-			row = []string{r.Name, r.TimeFrom.Format(dateTimeFormat), r.TimeTo.Format(dateTimeFormat), formatTime(r.TotalSeconds)}
+			row = []string{r.Name, r.TimeFrom.Format(dateTimeFormat), r.TimeTo.Format(dateTimeFormat), FormatTime(r.TotalSeconds)}
 		}
 
 		table.Append(row)
@@ -199,7 +199,7 @@ func ListHandler(from *string, to *string) {
 	table.Render()
 }
 
-func formatTime(timeInSeconds float64) string {
+func FormatTime(timeInSeconds float64) string {
 	return fmt.Sprintf("%f (%.1f min)", timeInSeconds/60/60, timeInSeconds/60.0)
 }
 

@@ -33,8 +33,7 @@ func EndOpenTasks(db *gorm.DB, t time.Time) {
 		l.TimeTo = &to
 		db.Save(&l)
 		duration := to.Sub(l.TimeFrom)
-		durationInHours := duration.Hours()
-		fmt.Printf("ended log for task %d (%f h)\n", l.TaskId, durationInHours)
+		fmt.Printf("ended log for task %d %s\n", l.TaskId, FormatTime(duration.Seconds()))
 	}
 }
 
