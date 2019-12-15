@@ -56,7 +56,7 @@ To install ttrack clone or download this repository and build it with ``go build
 
 The data is stored in a SQLITE database. The path of this file depends on the system you are using.
 
-Windows: ``C:\users\<username>\ttrack\ttrack.db``
-Linux: ``/home/tobias/ttrack/ttrack.db``
-Mac: ``No idea if someone knows the path please let me know``
+- Windows: ``C:\users\<username>\ttrack\ttrack.db``
+- Linux: ``/home/<username>/ttrack/ttrack.db``
+- Mac: ``No idea if someone knows the path please let me know``
 
