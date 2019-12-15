@@ -20,7 +20,7 @@ Both report types have the option to aggregate the work daily.
 
 ### Begin a task
 
-To start a task enter ``ttrack projA/task-123``. This command assumes that the starting time is "NOW". If you want to entere an explicit time you can do so by entering  ``ttrack projA/task-123 <date>``.
+To start a task enter ``ttrack begin projA/task-123``. This command assumes that the starting time is "NOW". If you want to entere an explicit time you can do so by entering  ``ttrack begin projA/task-123 <date>``.
 
 For the start date (as well as all other places where ttrack needs to have a date) TTrack tries to detect the formt how you enter the date and time. For example
 TTrack detects ``11-03-2011`` as the 3rd November 2011. If you enter ``03.11.2001`` the date is also the thrid of November 2011 but in the German format.
