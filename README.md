@@ -48,6 +48,10 @@ You also can use two options:
 
 Both options can be combined to get a report of the time you spent on each project starting from 1st of November till now grouped by day.
 
+## Installation
+
+To install ttrack clone or download this repository and build it with ``go build``. Then install it with ``go install``.
+
 ## How data is stored
 
 The data is stored in a SQLITE database. The path of this file depends on the system you are using.
