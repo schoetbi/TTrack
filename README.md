@@ -1,20 +1,8 @@
+![travis-ci](https://travis-ci.com/schoetbi/TTrack.svg?token=49gyUuwE7PY3x5UsqSvU&branch=master)
+
 # TTrack the command line time tracker
 
 TTrack helps you to keep track of the time you spent on your projects and tasks
-
-## Ideas behind TTrack
-
-At the same time I wanted to keep track of both the time I spent on each project and also the
-time I spent on each task within this project.
-
-The tasks are entered in the form  ``<project>/<task>``
-
-After all the work I like to have two kinds of report in a time period e.g. a month.
-
-1. A report where I can see the time I spent on each project
-2. A report for the time on each task
-
-Both report types have the option to aggregate the work daily.
 
 ## Usage
 
@@ -47,6 +35,20 @@ You also can use two options:
 - To group by project: ``ttrack report 11-1-2011 --project``
 
 Both options can be combined to get a report of the time you spent on each project starting from 1st of November till now grouped by day.
+
+## Ideas behind TTrack
+
+At the same time I wanted to keep track of both the time I spent on each project and also the
+time I spent on each task within this project.
+
+The tasks are entered in the form  ``<project>/<task>``
+
+After all the work I like to have two kinds of report in a time period e.g. a month.
+
+1. A report where I can see the time I spent on each project
+2. A report for the time on each task
+
+Both report types have the option to aggregate the work daily.
 
 ## Installation
 
