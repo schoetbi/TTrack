@@ -10,9 +10,6 @@ TTrack helps you to keep track of the time you spent on your projects and tasks
 
 To start a task enter ``ttrack begin projA/task-123``. This command assumes that the starting time is "NOW". If you want to entere an explicit time you can do so by entering  ``ttrack begin projA/task-123 <date>``.
 
-For the start date (as well as all other places where ttrack needs to have a date) TTrack tries to detect the formt how you enter the date and time. For example
-TTrack detects ``11-03-2011`` as the 3rd November 2011. If you enter ``03.11.2001`` the date is also the thrid of November 2011 but in the German format.
-
 If you begin the next task the currently running task is automatically ended.
 
 ### End all tasks
@@ -35,6 +32,26 @@ You also can use two options:
 - To group by project: ``ttrack report 11-1-2011 --project``
 
 Both options can be combined to get a report of the time you spent on each project starting from 1st of November till now grouped by day.
+
+## Date handling
+
+For all dates and times TTrack tries to detect the format how you enter the date and time. 
+
+For example TTrack detects ``11-03-2011`` as the 3rd November 2011. If you enter ``03.11.2001`` the date is also the thrid of November 2011 but in the German format.
+
+You can also ommit the date and only enter ``10:40``. In this case the date is assumed to be today.
+
+### Time shortcodes
+
+Instead of writing the full date and time you can enter a shortcode:
+
+|Shortcode|Meaning|
+| ------------- | ------------- |
+| t | Today 00:00 |
+| y | Yesterday 00:00|
+| m | Start of current month |
+| lm | Start of Last Month|
+
 
 ## Ideas behind TTrack
 
