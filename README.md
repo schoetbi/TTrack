@@ -37,7 +37,9 @@ Both options can be combined to get a report of the time you spent on each proje
 
 For all dates and times TTrack tries to detect the format how you enter the date and time. 
 
-For example TTrack detects ``11-03-2011`` as the 3rd November 2011. If you enter ``03.11.2001`` the date is also the thrid of November 2011 but in the German format.
+For example TTrack detects ``11-03-2011`` as the 3rd November 2011. If you enter ``03.11.2001`` the date is also the third of November 2011 but in the German format.
+
+### Enter time without a date
 
 You can also ommit the date and only enter ``10:40``. In this case the date is assumed to be today.
 
@@ -69,13 +71,20 @@ Both report types have the option to aggregate the work daily.
 
 ## Installation
 
-To install ttrack clone or download this repository and build it with ``go build``. Then install it with ``go install``.
+You can find prebuild binaries for linux and windows under [Releases](https://github.com/schoetbi/TTrack/releases).
+
+But you can also build ttrack yourself from source. To do so clone or download this repository and build it with ``go build``. Then install it with ``go install``.
 
 ## How data is stored
 
-The data is stored in a SQLITE database. The path of this file depends on the system you are using.
+The data is stored in a [SQLITE](https://www.sqlite.org) database. The path of this file depends on the system you are using.
 
 - Windows: ``C:\users\<username>\ttrack\ttrack.db``
 - Linux: ``/home/<username>/ttrack/ttrack.db``
 - Mac: ``No idea if someone knows the path please let me know``
+
+## Some tips
+
+- Put ttrack in your path. This way you can access it easily from every command prompt
+- Under Windows you can execute ``ttrack end`` on system shutdown to finish all started tasks.
 
